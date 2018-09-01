@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>Sanke Game</title>
+		<style>
+			html,
+			body {
+				width: 100%;
+				height: 100%;
+				background-color: darkgrey;
+				padding: 0;
+				margin: 0;
+				overflow: hidden;
+			}
+			
+			#board {
+				background: rgb(0, 0, 0);
+				padding: 0;
+				margin: 0;
+				overflow: hidden;
+			}
+			
+			#board {
+				height: 100%;
+				width: 100%;
+			}
+			
+			.container {
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%);
+				height: 510px;
+				width: 1020px;
+				display: block;
+			}
+			
+			.warning {
+				background: lightcoral;
+				height: 50px;
+				line-height: 50px;
+				color: white;
+				padding-left: 15px;
+				padding-right: 15px;
+			}
+			
+			.game-board {
+				position: relative;
+				height: 100%;
+				width: 50%;
+				border: 5px solid white;
+				display: inline-block;
+				margin: 0;
+				box-sizing: border-box;
+				float: left;
+			}
+			
+			.game-result {
+				position: relative;
+				height: 100%;
+				width: 50%;
+				border: none;
+				padding: 30px;
+				margin: 0;
+				display: inline-block;
+				color: white;
+				box-sizing: border-box;
+				float: left;
+			}
+			
+			h1 {
+				padding: 0;
+				margin: 0;
+			}
+			
+			.btn {
+				background-color: rgba(255, 255, 255, 0);
+				border: 2px solid white;
+				border-radius: 10px;
+				color: white;
+				cursor: pointer;
+				font-size: 25px;
+				outline: none;
+			}
+			
+			.btn:hover {
+				background-color: rgba(255, 255, 255, .4);
+			}
+			
+			.btn:active {
+				background-color: rgba(255, 255, 255, .8);
+			}
+			
+			* {
+				font-family: Roboto, Noto, sans-serifs;
+			}
+			
+			::selection {
+				background-color: #B3D4FC;
+				text-shadow: none;
+			}
+		</style>
+	</head>
+
+	<body>
+		<noscript>
+			<div class="warning">
+				Please enable JavaScript to play snake game!
+			</div>
+		</noscript>
+		<main class="container">
+			<div class="game-board">
+				<canvas id="board">
+					<div class="warning">
+						Your browser doesn't support Canvas!
+					</div>
+				</canvas>
+			</div>
+			<div class="game-result">
+				<button class="btn rotation-controller" data-rotation="left">←</button>
+				<button class="btn rotation-controller" data-rotation="up">↑</button>
+				<button class="btn rotation-controller" data-rotation="down">↓</button>
+				<button class="btn rotation-controller" data-rotation="right">→</button>
+				<h2>Result</h2>
+				<p>Score: <span id="score">0</span></p>
+				<p>Best score: <span id="bestScore">0</span></p>
+				<p>Time of played: <span id="time">0</span>s.</p>
+				<p>FPS:<span id="fps">0</span></p>
+				<h2>Settings</h2>
+				<div>
+					Speed:
+					<label>
+						<input type="radio" name="speed" value="slow" />
+						Slow
+					</label>
+					<label>
+						<input type="radio" name="speed" value="normal" checked />
+						Normal
+					</label>
+					<label>
+						<input type="radio" name="speed" value="fast" />
+						Fast
+					</label>
+				</div>
+				<button class="btn" id="gameControl">Start</button>
+				<button class="btn" id="reset">Clear Score</button>
+				<button class="btn" id="resetGame" style="display:none;">Reset Game</button>
+				<h2>How To Play</h2>
+				<p>
+					When the game started, you should press <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> to control the rotation of the snake.
+				</p>
+				<p>
+					If your snake ate itself or the snake went to the wall, you will lose.
+				</p>
+			</div>
+		</main>
+		<script>
+			'use strict';
+			Array.prototype.indexOfVia = function(value, begin = 0) {
+				for(let i = begin; i < this.length; i++)
+					if(this[i] === value) return i;
+				return -1;
+			}
+			Array.prototype.snake = function() {
+				for(let i = 1; i < snake.length; i++)
+					if(snake[0].x === snake[i].x && snake[0].y === snake[i].y) return true;
+				return false;
+			}
+			var score = 0,
+				bestScore = isNaN(localStorage.bestScore) ? 0 : Number(localStorage.bestScore),
+				time = 0,
+				gaming = "over",
+				rotation = "down",
+				snake = [],
+				food = {},
+				interval = null,
+				ofps = 0,
+				fps = 0,
+				lastRotation = "left";
+
+			function game() {
+				for(let i = snake.length - 1; i > 0; --i) {
+					snake[i] = {
+						x: snake[i - 1].x,
+						y: snake[i - 1].y
+					};
+				}
+				switch(rotation) {
+					case "up":
+						snake[0].y--;
+						break;
+					case "down":
+						snake[0].y++;
+						break;
+					case "left":
+						snake[0].x--;
+						break;
+					case "right":
+						snake[0].x++;
+						break;
+				}
+				if(snake[0].x < 0 || snake[0].y < 0 || snake[0].x > 100 || snake[0].y > 100 || snake.snake()) {
+					alert("You lost!");
+					document.getElementById("resetGame").click();
+				}
+				if(snake[0].x == food.x && snake[0].y == food.y) {
+					score++;
+					let x, y;
+					do {
+						x = (Math.random() * 98 | 0) + 1;
+						y = (Math.random() * 98 | 0) + 1;
+					} while (snake.indexOf(food = {
+							x: x,
+							y: y
+						}) >= 0);
+					switch(rotation) {
+						case "up":
+							snake.push({
+								x: snake[0].x,
+								y: snake[0].y + 1
+							});
+							break;
+						case "down":
+							snake.push({
+								x: snake[0].x,
+								y: snake[0].y + 1
+							});
+							break;
+						case "left":
+							snake.push({
+								x: snake[0].x + 1,
+								y: snake[0].y
+							});
+							break;
+						case "right":
+							snake.push({
+								x: snake[0].x - 1,
+								y: snake[0].y
+							});
+					}
+				}
+			}
+			(function() {
+				let controller = document.getElementsByClassName("rotation-controller");
+				for(let i = 0; i < controller.length; i++) controller[i].addEventListener("click", function() {
+					if(gaming == "going") switch(this.attributes["data-rotation"].value) {
+						case "left":
+							if(rotation != "right" && snake[0].x - snake[1].x != 1) rotation = "left";
+							break;
+						case "up":
+							if(rotation != "down" && snake[0].y - snake[1].y != 1) rotation = "up";
+							break;
+						case "right":
+							if(rotation != "left" && snake[0].x - snake[1].x != -1) rotation = "right";
+							break;
+						case "down":
+							if(rotation != "up" && snake[0].y - snake[1].y != -1) rotation = "down";
+							break;
+					}
+				});
+			})();
+			document.getElementById("gameControl").addEventListener("click", function(e) {
+				switch(gaming) {
+					case "over":
+						snake = [{
+							x: (Math.random() * 96 | 0) + 2,
+							y: (Math.random() * 96 | 0) + 2
+						}];
+						rotation = ["up", "down", "left", "right"][Math.random() * 3 | 0];
+						switch(rotation) {
+							case "up":
+								snake.push({
+									x: snake[0].x,
+									y: snake[0].y + 1
+								});
+								break;
+							case "down":
+								snake.push({
+									x: snake[0].x,
+									y: snake[0].y + 1
+								});
+								break;
+							case "left":
+								snake.push({
+									x: snake[0].x + 1,
+									y: snake[0].y
+								});
+								break;
+							case "right":
+								snake.push({
+									x: snake[0].x - 1,
+									y: snake[0].y
+								});
+						}
+						let x, y;
+						do {
+							x = (Math.random() * 98 | 0) + 1;
+							y = (Math.random() * 98 | 0) + 1;
+						} while (snake.indexOf(food = {
+								x: x,
+								y: y
+							}) >= 0);
+					case "paused":
+						let speed = "normal";
+						let speeds = document.getElementsByName("speed");
+						for(let i = 0; i < speeds.length; i++) {
+							if(speeds[i].checked) speed = speeds[i].value;
+							speeds[i].setAttribute("disabled", "disabled");
+						}
+						switch(speed) {
+							case "slow":
+								speed = 500;
+								break;
+							default:
+							case "normal":
+								speed = 300;
+								break;
+							case "fast":
+								speed = 100;
+								break;
+						}
+						interval = setInterval(game, speed);
+						gaming = "going";
+						document.getElementById("gameControl").innerHTML = "Pause";
+						document.getElementById("resetGame").style.display = "none";
+						break;
+					case "going":
+						clearInterval(interval);
+						gaming = "paused";
+						document.getElementById("gameControl").innerHTML = "Continue";
+						document.getElementById("resetGame").style.display = "inline";
+						break;
+					default:
+						alert("An error occured!");
+						gaming = "over";
+						break;
+				}
+			});
+			document.getElementById("reset").addEventListener("click", function(e) {
+				localStorage.bestScore = bestScore = 0;
+				if(gaming == "over") score = time = 0;
+			});
+			document.getElementById("resetGame").addEventListener("click", function() {
+				gaming = "over";
+				document.getElementById("gameControl").innerHTML = "Start";
+				document.getElementById("resetGame").style.display = "none";
+				let speeds = document.getElementsByName("speed");
+				for(let i = 0; i < speeds.length; i++) speeds[i].removeAttribute("disabled");
+				clearInterval(interval);
+				document.getElementById("fps").innerHTML = 0;
+				document.getElementById("score").innerHTML = 0;
+				if(score > bestScore) localStorage.bestScore = bestScore = score;
+				score = 0;
+				time = 0;
+			});
+			document.addEventListener("keydown", function(e) {
+				console.log(e.keyCode);
+				if(gaming == "going") switch(e.keyCode) {
+					case 37:
+						if(rotation != "right" && snake[0].x - snake[1].x != 1) rotation = "left";
+						break;
+					case 38:
+						if(rotation != "down" && snake[0].y - snake[1].y != 1) rotation = "up";
+						break;
+					case 39:
+						if(rotation != "left" && snake[0].x - snake[1].x != -1) rotation = "right";
+						break;
+					case 40:
+						if(rotation != "up" && snake[0].y - snake[1].y != -1) rotation = "down";
+						break;
+				}
+			});
+			setInterval(function() {
+				ofps = fps;
+				fps = 0;
+				if(gaming == "going") time++;
+			}, 1000);
+			setInterval(function() {
+				if(gaming == "going") {
+					document.getElementById("fps").innerHTML = ofps;
+					document.getElementById("score").innerHTML = score;
+					document.getElementById("time").innerHTML = time;
+				}
+				if(score > bestScore) {
+					localStorage.bestScore = bestScore = score;
+				}
+				document.getElementById("bestScore").innerHTML = bestScore;
+			}, 10);
+			var c = document.getElementById("board").getContext("2d");
+			window.onresize = function() {
+				document.getElementById("board").width = document.getElementById("board").offsetWidth;
+				document.getElementById("board").height = document.getElementById("board").offsetHeight;
+			}
+			window.onresize();
+			(function animate() {
+				window.requestAnimationFrame(animate, document.getElementById("board"));
+				if(gaming == "going") {
+					let width = document.getElementById("board").width;
+					let height = document.getElementById("board").height;
+					c.clearRect(0, 0, width, height);
+					c.beginPath();
+					c.strokeStyle = "white";
+					c.lineCap = "square";
+					c.lineWidth = 5;
+					c.moveTo(snake[0].x * 5, snake[0].y * 5);
+					for(let i = 1; i < snake.length; i++) c.lineTo(snake[i].x * 5, snake[i].y * 5);
+					c.stroke();
+					c.lineWidth = 10;
+					c.beginPath();
+					c.moveTo(food.x * 5, food.y * 5);
+					c.lineTo(food.x * 5, food.y * 5);
+					c.stroke();
+					fps++;
+				}
+			})();
+		</script>
+	</body>
+
+</html>
