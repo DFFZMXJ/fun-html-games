@@ -1,9 +1,11 @@
-# js-snaker
+# Fun HTML Games
 
-To play this game, download this file and open it within a browser supported Canvas. If you don't want to download this file, you can [play online](https://www.dffzmxj.tk/game), but it's Chinese.
+This is the collection of H5 games written by me. Feel free to enjoy! To play most of the games, download and open its file with a browser compatible with Canvas and further features. Some games also provided online demos.
 
-To control the snake, press the rotation keys on your keyboard. If your device doesn't have keyboard, click the buttons on the screen to control the snake. *(Unfriendly for touch screen.)*
+If you want to contribute, do it directly.
 
-To improve this game, please fork this repository, change the source code and create a pull request.
+Here're they.
 
-To provide multi-languages, create a file named snake.*language*.html and create a pull request.
+## JS Snaker [Play Online](https://www.dffzmxj.com/game)
+
+The game similar to what you played on Nokia. After clicking Start button, press arrow keys like `←`, `↑`, etc., to control the snake. Also, you can click the buttons on the screen.
