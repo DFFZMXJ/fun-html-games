@@ -149,10 +149,10 @@
 				<button class="btn" id="resetGame" style="display:none;">Reset Game</button>
 				<h2>How To Play</h2>
 				<p>
-					When the game started, you should press <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> to control the rotation of the snake.
+					After the game starts, you should press <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> to control the direction of the snake.
 				</p>
 				<p>
-					If your snake ate itself or the snake went to the wall, you will lose.
+					If your snake eats itself or crashes into the wall, you will lose.
 				</p>
 			</div>
 		</main>
@@ -202,7 +202,7 @@
 						break;
 				}
 				if(snake[0].x < 0 || snake[0].y < 0 || snake[0].x > 100 || snake[0].y > 100 || snake.snake()) {
-					alert("You lost!");
+					alert("Game over!");
 					document.getElementById("resetGame").click();
 				}
 				if(snake[0].x == food.x && snake[0].y == food.y) {
